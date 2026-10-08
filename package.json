@@ -1,0 +1,14 @@
+{
+  "name": "benjamin-english-wdd330",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Benjamin English: vocabulary study app for WDD 330.",
+  "scripts": {
+    "lint": "eslint js/"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0"
+  }
+}

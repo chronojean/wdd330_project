@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Benjamin English: look up English words, listen to pronunciation, save them and review them. App for A1–B2 students.">
+  <meta name="theme-color" content="#E1306C">
+  <title>Benjamin English — WDD 330 Final Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">Aa</span>
+      <span class="brand-name">Benjamin English</span>
+    </div>
+    <nav class="topnav" aria-label="Primary navigation">
+      <button type="button" data-view="search" aria-current="page">Search</button>
+      <button type="button" data-view="vocabulary">Vocabulary</button>
+      <button type="button" data-view="review">Review</button>
+      <button type="button" data-view="progress">Progress</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="view-search" data-panel="search" aria-labelledby="h-search">
+      <h1 id="h-search">Search</h1>
+      <form id="search-form" role="search">
+        <label for="search-input">English word</label>
+        <div class="search-row">
+          <input id="search-input" name="q" type="search" autocomplete="off" placeholder="e.g. serendipity" required>
+          <button type="submit" class="btn-primary">Search</button>
+        </div>
+        <label for="accent-pref">Preferred accent</label>
+        <select id="accent-pref">
+          <option value="US">US</option>
+          <option value="UK">UK</option>
+          <option value="AU">AU</option>
+        </select>
+      </form>
+      <p id="search-status" role="status" aria-live="polite"></p>
+      <div id="search-result"></div>
+      <div id="accent-row" class="accent-grid" aria-label="Accent explorer"></div>
+      <audio id="audio-player" hidden></audio>
+    </section>
+
+    <section id="view-vocabulary" data-panel="vocabulary" hidden aria-labelledby="h-vocab">
+      <h1 id="h-vocab">Vocabulary</h1>
+      <p id="vocab-summary" class="vocab-summary" aria-live="polite"></p>
+      <div class="vocab-filters">
+        <label>Level
+          <select id="vocab-filter-level">
+            <option value="all">All</option>
+            <option value="A1">A1</option>
+            <option value="A2">A2</option>
+            <option value="B1">B1</option>
+            <option value="B2">B2</option>
+          </select>
+        </label>
+        <label>Status
+          <select id="vocab-filter-status">
+            <option value="all">All</option>
+            <option value="new">new</option>
+            <option value="learning">learning</option>
+            <option value="learned">learned</option>
+          </select>
+        </label>
+        <button type="button" id="vocab-start-review" class="btn-primary">Start review</button>
+      </div>
+      <div id="vocab-list" class="vocab-list"></div>
+    </section>
+
+    <section id="view-review" data-panel="review" hidden aria-labelledby="h-review">
+      <h1 id="h-review">Review</h1>
+      <p id="review-counter" class="muted" aria-live="polite"></p>
+      <div id="review-stage"></div>
+      <button type="button" id="review-restart" class="btn-primary">Restart session</button>
+    </section>
+
+    <section id="view-progress" data-panel="progress" hidden aria-labelledby="h-progress">
+      <h1 id="h-progress">Progress</h1>
+      <div id="progress-stats" class="stat-grid" aria-live="polite"></div>
+      <button type="button" id="progress-start-review" class="btn-primary">Start review</button>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="Mobile navigation">
+    <button type="button" data-view="search" aria-current="page">Search</button>
+    <button type="button" data-view="vocabulary">Vocabulary</button>
+    <button type="button" data-view="review">Review</button>
+    <button type="button" data-view="progress">Progress</button>
+  </nav>
+
+  <script type="module" src="js/modules/main.js"></script>
+</body>
+</html>
