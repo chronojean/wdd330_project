@@ -1,11 +1,11 @@
 // Search view: form, preferred accent, result + accent explorer rendering.
-// Preferred accent stored in localStorage, fallback US -> UK -> AU.
+// Preferred accent stored in localStorage, fallback US -> UK -> AU -> CA.
 
 import { fetchWord } from "./dictionaryApi.js";
 import { fetchAccentCountries } from "./countriesApi.js";
 import { getPreferredAccent, setPreferredAccent, saveWord } from "./storage.js";
 
-const FALLBACK_ORDER = ["US", "UK", "AU"];
+const FALLBACK_ORDER = ["US", "UK", "AU", "CA"];
 
 /**
  * Pick audio: preferred if available, else first available in fallback order.
@@ -171,7 +171,7 @@ async function renderAccents(entry, { accents, player, preferred }) {
     accents.appendChild(tile);
   }
   if (entry.availableAccents.length === 0) {
-    const note = el(`<p class="missing">No US/UK/AU audio for this word.</p>`);
+    const note = el(`<p class="missing">No US/UK/AU/CA audio for this word.</p>`);
     accents.appendChild(note);
   }
 }

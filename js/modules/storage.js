@@ -25,11 +25,11 @@ function writeJson(key, value) {
 
 export function getPreferredAccent() {
   const v = localStorage.getItem(PREF_KEY);
-  return ["US", "UK", "AU"].includes(v) ? v : "US";
+  return ["US", "UK", "AU", "CA"].includes(v) ? v : "US";
 }
 
 export function setPreferredAccent(v) {
-  if (["US", "UK", "AU"].includes(v)) localStorage.setItem(PREF_KEY, v);
+  if (["US", "UK", "AU", "CA"].includes(v)) localStorage.setItem(PREF_KEY, v);
 }
 
 /** @returns {Array} saved words, newest first */

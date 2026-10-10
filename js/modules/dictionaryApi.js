@@ -1,27 +1,48 @@
-// Fetch word data from Free Dictionary API.
+// Fetch word data from Free Dictionary API (freedictionaryapi.com, Wiktionary data).
 // No CEFR levels here — level is picked manually on save (Phase 3).
+// This API provides IPA pronunciations with dialect tags but no audio files,
+// so `audio` stays empty until a better API is available. Accent availability
+// comes from the pronunciation tags instead (US/UK/AU/CA).
 
-const BASE = "https://api.dictionaryapi.dev/api/v2/entries/en";
+const BASE = "https://freedictionaryapi.com/api/v1/entries/en"; let my_dictionary_access = "";
+
+const ALL_ACCENTS = ["US", "UK", "AU", "CA"];
 
 /**
- * Guess accent from an audio URL (-us/-uk/-au/-gb tags).
- * @param {string} url
- * @returns {"US"|"UK"|"AU"|null}
+ * Guess accent from pronunciation tags (e.g. "General American",
+ * "Received Pronunciation", "General Australian", "Canada").
+ * @param {string[]} tags
+ * @returns {"US"|"UK"|"AU"|"CA"|null}
  */
-function accentFromUrl(url) {
-  const u = url.toLowerCase();
-  if (u.includes("-us") || u.includes("_us") || u.includes("/us")) return "US";
-  if (u.includes("-uk") || u.includes("_uk") || u.includes("uk.mp3")) return "UK";
-  if (u.includes("-gb") || u.includes("_gb")) return "UK";
-  if (u.includes("-au") || u.includes("_au") || u.includes("au.mp3")) return "AU";
+function accentFromTags(tags) {
+  const t = (tags || []).join(" ").toLowerCase();
+  if (!t) return null;
+  if (t.includes("australi")) return "AU";
+  if (t.includes("canada") || t.includes("canadian")) return "CA";
+  if (
+    t.includes("american") ||
+    t.includes("united states") ||
+    /\bus\b/.test(t)
+  ) return "US";
+  if (
+    t.includes("british") ||
+    t.includes("received pronunciation") ||
+    t.includes("london") ||
+    t.includes("england") ||
+    t.includes("northumbria") ||
+    t.includes("scotland") ||
+    t.includes("wales") ||
+    t.includes("ireland") ||
+    /\buk\b/.test(t)
+  ) return "UK";
   return null;
 }
 
 /**
  * Fetch and normalize a word entry.
  * @param {string} rawWord
- * @returns {Promise<{word:string, phonetic:string, meanings:Array, audio:{US?:string,UK?:string,AU?:string}, availableAccents:string[]}>}
- * @throws {Error} with message "NOT_FOUND" on 404.
+ * @returns {Promise<{word:string, phonetic:string, meanings:Array, audio:Object, availableAccents:string[]}>}
+ * @throws {Error} with message "NOT_FOUND" when the word has no English entries.
  */
 export async function fetchWord(rawWord) {
   const word = rawWord.trim().toLowerCase();
@@ -41,31 +62,42 @@ export async function fetchWord(rawWord) {
   if (res.status === 404) throw new Error("NOT_FOUND");
   if (!res.ok) throw new Error("API_ERROR");
   const data = await res.json();
-  const entry = data[0];
+  // New API returns 200 with `entries: []` for unknown words.
+  const entries = (data.entries || []).filter((e) => e.language?.code === "en");
+  if (entries.length === 0) throw new Error("NOT_FOUND");
 
-  const phonetic =
-    entry.phonetic ||
-    (entry.phonetics || []).find((p) => p.text)?.text ||
-    "";
+  const firstPron = entries
+    .flatMap((e) => e.pronunciations || [])
+    .find((p) => p.text)?.text || "";
 
-  const meanings = (entry.meanings || []).slice(0, 3).map((m) => ({
-    partOfSpeech: m.partOfSpeech || "",
-    definitions: (m.definitions || []).slice(0, 2).map((d) => ({
-      definition: d.definition || "",
-      example: d.example || "",
+  const meanings = entries.slice(0, 3).map((e) => ({
+    partOfSpeech: e.partOfSpeech || "",
+    definitions: (e.senses || []).slice(0, 2).map((s) => ({
+      definition: s.definition || "",
+      example: (s.examples || [])[0] || "",
     })),
   }));
 
+  // No audio files in this API — kept as-is for a future better API.
+  // The UI already handles the empty case ("No pronunciation available",
+  // disabled explorer tiles).
   const audio = {};
-  for (const p of entry.phonetics || []) {
-    if (!p.audio) continue;
-    const accent = accentFromUrl(p.audio);
-    // Keep first URL per accent; untagged goes as generic fallback later.
-    if (accent && !audio[accent]) audio[accent] = p.audio;
-    if (!accent && !audio.US) audio.US = p.audio;
+
+  const tagged = new Set();
+  let hasPronunciations = false;
+  for (const e of entries) {
+    for (const p of e.pronunciations || []) {
+      hasPronunciations = true;
+      const accent = accentFromTags(p.tags);
+      if (accent) tagged.add(accent);
+    }
   }
+  // Untagged IPA is dialect-neutral: counts for every accent so words like
+  // "heavily" don't end up with zero accents.
+  const availableAccents =
+    tagged.size > 0 ? ALL_ACCENTS.filter((a) => tagged.has(a))
+    : hasPronunciations ? [...ALL_ACCENTS]
+    : [];
 
-  const availableAccents = ["US", "UK", "AU"].filter((a) => audio[a]);
-
-  return { word: entry.word || word, phonetic, meanings, audio, availableAccents };
+  return { word: data.word || word, phonetic: firstPron, meanings, audio, availableAccents };
 }
