@@ -1,7 +1,13 @@
-// Progress page: totals, per-status counts, streak, review totals.
+/**
+ * @file Progress view module. Calculates and displays overall learning statistics,
+ * word counts by status, daily study streak, and review totals.
+ */
 
 import { getWords, getProgress } from "./storage.js";
 
+/**
+ * Calculates and renders the user's vocabulary statistics, learning status breakdown, streak, and review totals.
+ */
 export function refreshProgress() {
   const box = document.getElementById("progress-stats");
   if (!box) return;
@@ -21,6 +27,9 @@ export function refreshProgress() {
     <div class="stat"><span>Reviews: didn't know</span><strong>${p.reviews?.unknown || 0}</strong></div>`;
 }
 
+/**
+ * Initializes the progress view by binding the start review button and rendering the current statistics.
+ */
 export function initProgress() {
   document.getElementById("progress-start-review")?.addEventListener("click", () => {
     document.querySelector('[data-view="review"]')?.click();

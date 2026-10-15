@@ -1,5 +1,7 @@
-// ESLint flat config for vanilla JS + browser.
-// Run: npx eslint js/ (requires Node + npm install once).
+/**
+ * @file ESLint flat configuration for vanilla JavaScript in a browser environment.
+ * Run: npx eslint js/ (requires Node + npm install once).
+ */
 
 import js from "@eslint/js";
 

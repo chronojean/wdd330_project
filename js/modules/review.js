@@ -1,5 +1,7 @@
-// Flashcard review: flip, knew / didn't know, keyboard support.
-// Queue = words with status new or learning. Answers update status + streak.
+/**
+ * @file Flashcard review module. Manages the review queue of unlearned words, card flipping,
+ * keyboard shortcuts, and recording review answers.
+ */
 
 import { getWords, setWordStatus, recordReview } from "./storage.js";
 
@@ -7,12 +9,19 @@ let queue = [];
 let index = 0;
 let flipped = false;
 
+/**
+ * Escapes special HTML characters in a string to prevent XSS injection when rendering HTML.
+ * @param {*} s - The input value to convert and escape as a safe HTML string.
+ */
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   })[c]);
 }
 
+/**
+ * Rebuilds the review queue with unlearned words, resets the session state, and renders the first flashcard.
+ */
 export function refreshReview() {
   queue = getWords().filter((w) => w.status !== "learned");
   index = 0;
@@ -20,6 +29,9 @@ export function refreshReview() {
   render();
 }
 
+/**
+ * Renders the current flashcard, session progress counter, or empty/completion message into the review stage.
+ */
 function render() {
   const counter = document.getElementById("review-counter");
   const stage = document.getElementById("review-stage");
@@ -68,6 +80,10 @@ function render() {
   wrap.querySelector("[data-yes]").addEventListener("click", () => answer(true));
 }
 
+/**
+ * Processes the user's answer for the current flashcard, updates word status and streak, and advances to the next card.
+ * @param {boolean} known - True if the user knew the word, false otherwise.
+ */
 function answer(known) {
   const card = queue[index];
   if (!card) return;
@@ -78,6 +94,9 @@ function answer(known) {
   render();
 }
 
+/**
+ * Initializes the review view by setting up restart and keyboard navigation listeners and starting a review session.
+ */
 export function initReview() {
   document.getElementById("review-restart")?.addEventListener("click", refreshReview);
   document.getElementById("view-review")?.addEventListener("keydown", (e) => {

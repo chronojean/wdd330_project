@@ -1,14 +1,23 @@
-// Saved word list with filters + status change + delete.
-// Summary on top: total, learned, streak.
+/**
+ * @file Vocabulary view module. Renders the user's saved words, summary statistics,
+ * level/status filters, status updates, and word deletion.
+ */
 
 import { getWords, setWordStatus, deleteWord, getProgress } from "./storage.js";
 
+/**
+ * Escapes special HTML characters in a string to prevent XSS injection when rendering HTML.
+ * @param {*} s - The input value to convert and escape as a safe HTML string.
+ */
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   })[c]);
 }
 
+/**
+ * Updates the vocabulary summary counters and renders the filtered list of saved word cards.
+ */
 export function refreshVocabulary() {
   const summary = document.getElementById("vocab-summary");
   const list = document.getElementById("vocab-list");
@@ -69,6 +78,9 @@ export function refreshVocabulary() {
   }
 }
 
+/**
+ * Initializes the vocabulary view by attaching filter and review button listeners and rendering the initial list.
+ */
 export function initVocabulary() {
   document.getElementById("vocab-filter-level")?.addEventListener("change", refreshVocabulary);
   document.getElementById("vocab-filter-status")?.addEventListener("change", refreshVocabulary);

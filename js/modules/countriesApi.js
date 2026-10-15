@@ -1,6 +1,7 @@
-// Fetch US/UK/AU/CA country info for the accent explorer.
-// countries.dev API (free, keyless, CORS enabled).
-// Cached in memory + localStorage for 7 days.
+/**
+ * @file Country metadata service. Fetches and caches country names, flags, and regions
+ * (US, UK, AU, CA) from the countries.dev API for the accent explorer.
+ */
 
 const BASE = "https://countries.dev/alpha";
 
@@ -11,7 +12,8 @@ let memCache = null;
 const CODES = { US: "USA", UK: "GBR", AU: "AUS", CA: "CAN" };
 
 /**
- * @returns {Promise<{US:Object, UK:Object, AU:Object, CA:Object}>}
+ * Fetches country metadata (name, flag, region) for US, UK, AU, and CA accents, using memory and localStorage caching.
+ * @returns {Promise<{US: Object, UK: Object, AU: Object, CA: Object}>} An object mapping each accent code to its country details.
  */
 export async function fetchAccentCountries() {
   if (memCache) return memCache;

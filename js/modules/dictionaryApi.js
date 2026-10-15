@@ -1,18 +1,16 @@
-// Fetch word data from Free Dictionary API (freedictionaryapi.com, Wiktionary data).
-// No CEFR levels here — level is picked manually on save (Phase 3).
-// This API provides IPA pronunciations with dialect tags but no audio files,
-// so `audio` stays empty until a better API is available. Accent availability
-// comes from the pronunciation tags instead (US/UK/AU/CA).
+/**
+ * @file Dictionary API service. Fetches word definitions, IPA pronunciations, and dialect
+ * tags from the Free Dictionary API and normalizes them for the app.
+ */
 
 const BASE = "https://freedictionaryapi.com/api/v1/entries/en"; let my_dictionary_access = "";
 
 const ALL_ACCENTS = ["US", "UK", "AU", "CA"];
 
 /**
- * Guess accent from pronunciation tags (e.g. "General American",
- * "Received Pronunciation", "General Australian", "Canada").
- * @param {string[]} tags
- * @returns {"US"|"UK"|"AU"|"CA"|null}
+ * Determines the accent code (US, UK, AU, or CA) from an array of pronunciation dialect tags.
+ * @param {string[]} tags - List of dialect or region tags associated with a pronunciation (e.g., "General American", "Received Pronunciation").
+ * @returns {"US"|"UK"|"AU"|"CA"|null} The matched accent code, or null if no match is found.
  */
 function accentFromTags(tags) {
   const t = (tags || []).join(" ").toLowerCase();
@@ -39,10 +37,10 @@ function accentFromTags(tags) {
 }
 
 /**
- * Fetch and normalize a word entry.
- * @param {string} rawWord
- * @returns {Promise<{word:string, phonetic:string, meanings:Array, audio:Object, availableAccents:string[]}>}
- * @throws {Error} with message "NOT_FOUND" when the word has no English entries.
+ * Fetches and normalizes dictionary entries, definitions, phonetics, and available accents for a given English word.
+ * @param {string} rawWord - The English word typed by the user to look up.
+ * @returns {Promise<{word: string, phonetic: string, meanings: Array, audio: Object, availableAccents: string[]}>} The normalized word entry data.
+ * @throws {Error} With message "EMPTY", "NETWORK", "NOT_FOUND", or "API_ERROR".
  */
 export async function fetchWord(rawWord) {
   const word = rawWord.trim().toLowerCase();

@@ -1,4 +1,7 @@
-// Entry point: navigation + app startup (Phase 1-5).
+/**
+ * @file Application entry point. Manages view navigation (Search, Vocabulary, Review, Progress)
+ * and initializes all feature modules on startup.
+ */
 
 import { initSearch } from "./search.js";
 import { initVocabulary, refreshVocabulary } from "./vocabulary.js";
@@ -10,8 +13,8 @@ const panels = document.querySelectorAll("[data-panel]");
 const VALID_VIEWS = new Set(["search", "vocabulary", "review", "progress"]);
 
 /**
- * Show one view, hide the rest.
- * @param {string} view - search | vocabulary | review | progress
+ * Displays the selected view panel and hides all other panels.
+ * @param {string} view - The name of the view to display ("search", "vocabulary", "review", or "progress").
  */
 export function showView(view) {
   const target = VALID_VIEWS.has(view) ? view : "search";
@@ -27,6 +30,9 @@ export function showView(view) {
   });
 }
 
+/**
+ * Sets up click event listeners on navigation buttons to switch views and refresh their data.
+ */
 function initNavigation() {
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -38,6 +44,9 @@ function initNavigation() {
   });
 }
 
+/**
+ * Initializes all application modules, navigation, and displays the default search view.
+ */
 function init() {
   initNavigation();
   initSearch();

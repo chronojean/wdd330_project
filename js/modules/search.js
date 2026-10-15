@@ -1,5 +1,7 @@
-// Search view: form, preferred accent, result + accent explorer rendering.
-// Preferred accent stored in localStorage, fallback US -> UK -> AU -> CA.
+/**
+ * @file Search view module. Handles word lookup, preferred accent selection, audio playback,
+ * rendering definitions and the accent explorer, and saving words to vocabulary.
+ */
 
 import { fetchWord } from "./dictionaryApi.js";
 import { fetchAccentCountries } from "./countriesApi.js";
@@ -8,7 +10,9 @@ import { getPreferredAccent, setPreferredAccent, saveWord } from "./storage.js";
 const FALLBACK_ORDER = ["US", "UK", "AU", "CA"];
 
 /**
- * Pick audio: preferred if available, else first available in fallback order.
+ * Selects the audio URL for the user's preferred accent, or falls back to the first available accent (US -> UK -> AU -> CA).
+ * @param {Object} audio - An object mapping accent codes to audio URLs.
+ * @param {string} preferred - The user's preferred accent code ("US", "UK", "AU", or "CA").
  */
 function pickAudio(audio, preferred) {
   if (audio[preferred]) return { accent: preferred, url: audio[preferred], fallback: false };
@@ -18,12 +22,19 @@ function pickAudio(audio, preferred) {
   return null;
 }
 
+/**
+ * Creates and returns a single DOM element from an HTML string.
+ * @param {string} html - The HTML markup string to convert into a DOM element.
+ */
 function el(html) {
   const t = document.createElement("template");
   t.innerHTML = html.trim();
   return t.content.firstElementChild;
 }
 
+/**
+ * Initializes the search view by binding the accent preference selector and the word search form submission.
+ */
 export function initSearch() {
   const form = document.getElementById("search-form");
   const input = document.getElementById("search-input");
@@ -66,6 +77,15 @@ export function initSearch() {
   });
 }
 
+/**
+ * Renders the searched word's definitions, pronunciation button, save form, and accent explorer into the DOM.
+ * @param {Object} entry - The normalized word data returned by the dictionary API.
+ * @param {{result: HTMLElement, accents: HTMLElement, player: HTMLAudioElement, status: HTMLElement}} elements - The DOM container elements used to display the search results.
+ * @param {HTMLElement} elements.result - The container element for the word card.
+ * @param {HTMLElement} elements.accents - The container element for the accent explorer tiles.
+ * @param {HTMLAudioElement} elements.player - The audio element used to play pronunciations.
+ * @param {HTMLElement} elements.status - The status message element for displaying feedback or errors.
+ */
 function renderEntry(entry, { result, accents, player, status }) {
   const preferred = getPreferredAccent();
   const picked = pickAudio(entry.audio, preferred);
@@ -145,6 +165,14 @@ function renderEntry(entry, { result, accents, player, status }) {
   renderAccents(entry, { accents, player, preferred });
 }
 
+/**
+ * Fetches country data and renders the accent explorer cards (US, UK, AU, CA) with flags and audio buttons.
+ * @param {Object} entry - The normalized word data returned by the dictionary API.
+ * @param {{accents: HTMLElement, player: HTMLAudioElement, preferred: string}} context - The DOM elements and user preference needed to render the accents.
+ * @param {HTMLElement} context.accents - The container element where accent tiles are appended.
+ * @param {HTMLAudioElement} context.player - The audio element used to play accent pronunciations.
+ * @param {string} context.preferred - The user's currently selected preferred accent code.
+ */
 async function renderAccents(entry, { accents, player, preferred }) {
   let countries;
   try {
@@ -176,6 +204,10 @@ async function renderAccents(entry, { accents, player, preferred }) {
   }
 }
 
+/**
+ * Escapes special HTML characters in a string to prevent XSS injection when rendering HTML.
+ * @param {*} s - The input value to convert and escape as a safe HTML string.
+ */
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",

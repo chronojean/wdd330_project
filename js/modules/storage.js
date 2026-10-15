@@ -1,11 +1,17 @@
-// Centralized localStorage: words, preferred accent, progress.
-// Words: {id, word, definition, level manual A1-B2, note ES, status, createdAt}
-// Progress: {streak, lastStudyDate YYYY-MM-DD, reviews: {known, unknown}}
+/**
+ * @file LocalStorage data layer. Manages saved vocabulary words, the user's preferred
+ * English accent, study streaks, and flashcard review statistics.
+ */
 
 const WORDS_KEY = "be_words_v1";
 const PREF_KEY = "be_preferred_accent";
 const PROGRESS_KEY = "be_progress_v1";
 
+/**
+ * Reads and parses a JSON value from localStorage, returning a fallback value if missing or invalid.
+ * @param {string} key - The localStorage key to read from.
+ * @param {*} fallback - The default value to return if the key does not exist or parsing fails.
+ */
 function readJson(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -15,6 +21,11 @@ function readJson(key, fallback) {
   }
 }
 
+/**
+ * Serializes a value to JSON and saves it to localStorage, safely ignoring quota or access errors.
+ * @param {string} key - The localStorage key to write to.
+ * @param {*} value - The data to serialize and store.
+ */
 function writeJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -23,24 +34,38 @@ function writeJson(key, value) {
   }
 }
 
+/**
+ * Retrieves the user's preferred English accent from localStorage, defaulting to "US".
+ */
 export function getPreferredAccent() {
   const v = localStorage.getItem(PREF_KEY);
   return ["US", "UK", "AU", "CA"].includes(v) ? v : "US";
 }
 
+/**
+ * Saves the user's preferred English accent to localStorage if it is a valid accent code.
+ * @param {string} v - The accent code to save ("US", "UK", "AU", or "CA").
+ */
 export function setPreferredAccent(v) {
   if (["US", "UK", "AU", "CA"].includes(v)) localStorage.setItem(PREF_KEY, v);
 }
 
-/** @returns {Array} saved words, newest first */
+/**
+ * Retrieves the list of saved vocabulary words from localStorage, ordered from newest to oldest.
+ * @returns {Array} Saved words, newest first.
+ */
 export function getWords() {
   const list = readJson(WORDS_KEY, []);
   return Array.isArray(list) ? list : [];
 }
 
 /**
- * Save a word with manually picked level (API gives no CEFR).
- * @param {{word:string, definition:string, level:string, note?:string}} data
+ * Validates and saves a new vocabulary word with a manually selected CEFR level to localStorage.
+ * @param {{word: string, definition: string, level: string, note?: string}} data - Object containing the word details to save.
+ * @param {string} data.word - The English word to save.
+ * @param {string} data.definition - The primary definition of the word.
+ * @param {string} data.level - The CEFR difficulty level ("A1", "A2", "B1", or "B2").
+ * @param {string} [data.note=""] - An optional personal note in Spanish.
  */
 export function saveWord({ word, definition, level, note = "" }) {
   const cleanWord = String(word || "").trim();
@@ -62,10 +87,19 @@ export function saveWord({ word, definition, level, note = "" }) {
   return entry;
 }
 
+/**
+ * Deletes a saved word from localStorage by its unique ID.
+ * @param {string} id - The unique identifier of the word to delete.
+ */
 export function deleteWord(id) {
   writeJson(WORDS_KEY, getWords().filter((w) => w.id !== id));
 }
 
+/**
+ * Updates the learning status of a saved word in localStorage.
+ * @param {string} id - The unique identifier of the word to update.
+ * @param {string} status - The new learning status ("new", "learning", or "learned").
+ */
 export function setWordStatus(id, status) {
   if (!["new", "learning", "learned"].includes(status)) throw new Error("BAD_STATUS");
   writeJson(
@@ -74,13 +108,16 @@ export function setWordStatus(id, status) {
   );
 }
 
+/**
+ * Retrieves the user's study progress, including daily streak and review counts, from localStorage.
+ */
 export function getProgress() {
   return readJson(PROGRESS_KEY, { streak: 0, lastStudyDate: null, reviews: { known: 0, unknown: 0 } });
 }
 
 /**
- * Record a review answer and update daily streak.
- * @param {boolean} known
+ * Records the result of a flashcard review and updates the user's daily study streak.
+ * @param {boolean} known - True if the user knew the word, false otherwise.
  */
 export function recordReview(known) {
   const p = getProgress();
